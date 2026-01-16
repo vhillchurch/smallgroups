@@ -1,0 +1,43 @@
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  background: #f6f6f6;
+}
+
+.vh-header { text-align:center; padding:24px 12px; }
+.vh-header h1 { margin:0; font-size:26px; }
+.vh-header p { margin-top:6px; color:#555; }
+
+.vh-filters {
+  display:flex; gap:10px; padding:12px; overflow-x:auto; background:#fff;
+}
+
+.vh-filter-btn {
+  padding:8px 14px; border-radius:20px; border:1px solid #ccc;
+  background:#fff; cursor:pointer; white-space:nowrap;
+}
+.vh-filter-btn.active { background:#111; color:#fff; border-color:#111; }
+
+.vh-groups {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:18px; padding:16px;
+}
+
+.vh-card {
+  background:#fff; border-radius:12px; overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.vh-card img { width:100%; height:160px; object-fit:cover; }
+
+.vh-card-content { padding:14px 16px 16px; }
+.vh-card-content h3 { margin:0 0 4px; font-size:18px; }
+.vh-leaders { font-size:14px; font-weight:500; margin-bottom:6px; }
+.vh-meta { font-size:14px; color:#555; }
+.vh-location { font-size:14px; font-weight:500; margin-top:2px; }
+
+.vh-signup {
+  display:block; margin-top:12px; text-align:center;
+  background:#111; color:#fff; padding:10px; border-radius:6px;
+  text-decoration:none;
+}
