@@ -1,8 +1,8 @@
-// Google Sheet JSON feed (stable, no CSV issues)
+// Google Sheet (Visualization API – stable, no CSV issues)
 const SHEET_URL =
 "https://docs.google.com/spreadsheets/d/1-zXVSkUVs1TEYutbPaKPjaJ0cGTxvxzWqkZ1ynNZG1Y/gviz/tq?tqx=out:json";
 
-// Default images by Group Type (life stage)
+// Default images by Group Type (stored in /images/)
 const DEFAULT_IMAGES = {
   "Life & Community": "images/life-community.jpg",
   "For the Ladies": "images/for-the-ladies.jpg",
@@ -14,9 +14,9 @@ const DEFAULT_IMAGES = {
 };
 
 fetch(SHEET_URL)
-  .then(r => r.text())
-  .then(t => {
-    const json = JSON.parse(t.substring(47).slice(0, -2));
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
 
     const groups = rows
@@ -24,15 +24,34 @@ fetch(SHEET_URL)
       .filter(r => r.c[1]?.v && r.c[1].v !== "Group Name")
       .map(r => {
         const c = r.c;
+
+        const leaders = c[0]?.v || "";
+        const name = c[1]?.v || "";
+        const whenWhere = c[2]?.v || "";
+        const signup = c[3]?.v || "#";
         const lifeStage = c[4]?.v || "Other";
+        const location = c[5]?.v || "";
+
+        // NEW: picture link from the sheet (raw GitHub image URL)
+        const sheetImage = c[6]?.v || "";
+
+        const time = whenWhere.includes(",")
+          ? whenWhere.split(",")[0]
+          : whenWhere;
+
+        const image =
+          sheetImage && sheetImage.startsWith("http")
+            ? sheetImage
+            : (DEFAULT_IMAGES[lifeStage] || DEFAULT_IMAGES["Other"]);
+
         return {
-          leaders: c[0]?.v || "",
-          name: c[1]?.v || "",
-          time: (c[2]?.v || "").split(",")[0],
-          location: c[5]?.v || "",
-          signup: c[3]?.v || "#",
+          leaders,
+          name,
+          time,
+          location,
+          signup,
           lifeStage,
-          image: DEFAULT_IMAGES[lifeStage] || DEFAULT_IMAGES["Other"]
+          image
         };
       });
 
@@ -49,7 +68,11 @@ function buildApp(groups) {
       <p>Small Groups at Victory Hill Church</p>
     </div>
     <div class="vh-filters">
-      ${stages.map((s,i)=>`<button class="vh-filter-btn ${i? "":"active"}" data-stage="${s}">${s}</button>`).join("")}
+      ${stages.map((s, i) =>
+        `<button class="vh-filter-btn ${i === 0 ? "active" : ""}" data-stage="${s}">
+          ${s}
+        </button>`
+      ).join("")}
     </div>
     <div class="vh-groups"></div>
   `;
@@ -59,25 +82,30 @@ function buildApp(groups) {
 
   const render = stage => {
     grid.innerHTML = "";
-    groups.filter(g => stage==="All" || g.lifeStage===stage).forEach(g=>{
-      grid.innerHTML += `
-        <div class="vh-card">
-          <img src="${g.image}" alt="${g.name}">
-          <div class="vh-card-content">
-            <h3>${g.name}</h3>
-            <div class="vh-leaders">${g.leaders}</div>
-            <div class="vh-meta">${g.time}</div>
-            <div class="vh-location">${g.location}</div>
-            <a class="vh-signup" href="${g.signup}" target="_blank">Sign Up</a>
+    groups
+      .filter(g => stage === "All" || g.lifeStage === stage)
+      .forEach(g => {
+        grid.innerHTML += `
+          <div class="vh-card">
+            <img src="${g.image}" alt="${g.name}">
+            <div class="vh-card-content">
+              <h3>${g.name}</h3>
+              <div class="vh-leaders">${g.leaders}</div>
+              <div class="vh-meta">${g.time}</div>
+              <div class="vh-location">${g.location}</div>
+              <a class="vh-signup" href="${g.signup}" target="_blank">Sign Up</a>
+            </div>
           </div>
-        </div>`;
-    });
+        `;
+      });
   };
 
-  buttons.forEach(b=>b.onclick=()=>{
-    buttons.forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    render(b.dataset.stage);
+  buttons.forEach(btn => {
+    btn.onclick = () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      render(btn.dataset.stage);
+    };
   });
 
   render("All");
